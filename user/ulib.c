@@ -19,7 +19,7 @@ strcmp(const char *p, const char *q)
 {
   while(*p && *p == *q)
     p++, q++;
-  return (uchar)*p - (uchar)*q;
+  return (uchar)*p - (uchar)*q; //相同返回0
 }
 
 uint

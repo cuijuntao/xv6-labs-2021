@@ -51,7 +51,7 @@ struct dinode {
 #define BBLOCK(b, sb) ((b)/BPB + sb.bmapstart)
 
 // Directory is a file containing a sequence of dirent structures.
-#define DIRSIZ 14
+#define DIRSIZ 14 //这是xv6文件系统中定义的一个常量（通常是14），表示目录项中文件名部分占用的固定字节数。
 
 struct dirent {
   ushort inum;
