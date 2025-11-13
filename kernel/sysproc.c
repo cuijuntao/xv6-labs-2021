@@ -95,3 +95,19 @@ sys_uptime(void)
   release(&tickslock);
   return xticks;
 }
+
+
+uint64
+sys_trace(void)
+{
+  int mask;
+
+  if(argint(0, &mask) < 0)
+    return -1;
+
+  // 把获得掩码存进进程的这个结构体里面，方面在syscall.c里面调用
+  struct proc *p = myproc();  //获取现在的进程
+  p->trace_mask = mask;
+
+  return 0;
+}

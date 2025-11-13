@@ -164,6 +164,7 @@ freeproc(struct proc *p)
   p->killed = 0;
   p->xstate = 0;
   p->state = UNUSED;
+  p->trace_mask = 0;  //释放上一次的mask 不然如果没有调用trace，新的命令会用上一次trace残留的mask
 }
 
 // Create a user page table for a given process,
@@ -281,13 +282,16 @@ fork(void)
     return -1;
   }
 
-  // Copy user memory from parent to child.
+  // Copy user memory from parent to child. 把父进程的一些参数复制到子进程
   if(uvmcopy(p->pagetable, np->pagetable, p->sz) < 0){
     freeproc(np);
     release(&np->lock);
     return -1;
   }
   np->sz = p->sz;
+
+  //我们在这里也需要把父进程的mask传给子进程的mask 不然子进程就不知道
+  np->trace_mask = p->trace_mask;
 
   // copy saved user registers.
   *(np->trapframe) = *(p->trapframe);
