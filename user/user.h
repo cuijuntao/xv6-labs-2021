@@ -1,5 +1,6 @@
 struct stat;
 struct rtcdate;
+struct sysinfo;
 
 // system calls 这部分声明的函数是用户程序与操作系统内核 (Kernel) 沟通的唯一桥梁。
 //当用户程序调用这些函数时，它会触发一个特殊的硬件中断，使得CPU从用户态切换到内核态，由内核来执行相应的特权操作
@@ -26,6 +27,7 @@ int sleep(int); // 让进程暂停指定的“ticks”数。
 int uptime(void);   // 获取系统自启动以来的“ticks”数。
 
 int trace(int);
+int sysinfo(struct sysinfo *);
 
 // ulib.c
 //这部分声明的函数是在用户空间实现的，它们不直接与内核交互（虽然它们内部可能会调用系统调用）。它们是标准的C语言库函数的简化版，为用户程序提供了便利。

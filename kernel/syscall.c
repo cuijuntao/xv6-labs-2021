@@ -105,6 +105,7 @@ extern uint64 sys_wait(void);
 extern uint64 sys_write(void);
 extern uint64 sys_uptime(void);
 extern uint64 sys_trace(void);  //新添sys_trace声明
+extern uint64 sys_sysinfo(void);  //新添sys_trace声明
 
 static uint64 (*syscalls[])(void) = {
 [SYS_fork]    sys_fork,
@@ -129,6 +130,7 @@ static uint64 (*syscalls[])(void) = {
 [SYS_mkdir]   sys_mkdir,
 [SYS_close]   sys_close,
 [SYS_trace]   sys_trace,  //新添调用
+[SYS_sysinfo]   sys_sysinfo,  //新添调用
 };
 
 static char *syscalls_name[] = {  //需要自定义一个syscalls_name，以便我们跟踪时知道调用的名字
@@ -155,6 +157,7 @@ static char *syscalls_name[] = {  //需要自定义一个syscalls_name，以便�
 [SYS_mkdir]   "mkdir",
 [SYS_close]   "close",
 [SYS_trace]   "trace",
+[SYS_sysinfo] "sysinfo",
 };
 
 

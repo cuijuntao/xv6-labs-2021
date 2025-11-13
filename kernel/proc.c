@@ -6,9 +6,9 @@
 #include "proc.h"
 #include "defs.h"
 
-struct cpu cpus[NCPU];
+struct cpu cpus[NCPU];  //一个CPU结构体数组，每个CPU核心对应一个
 
-struct proc proc[NPROC];
+struct proc proc[NPROC];  //定义了一个 进程表 (Process Table)，也就是一个进程结构体数组，操作系统中所有的进程都在这张表中
 
 struct proc *initproc;
 
@@ -102,13 +102,13 @@ allocpid() {
 // and return with p->lock held.
 // If there are no free procs, or a memory allocation fails, return 0.
 static struct proc*
-allocproc(void)
+allocproc(void) //创建进程
 {
   struct proc *p;
 
   for(p = proc; p < &proc[NPROC]; p++) {
     acquire(&p->lock);
-    if(p->state == UNUSED) {
+    if(p->state == UNUSED) {  //如果有空闲状态的进程
       goto found;
     } else {
       release(&p->lock);
@@ -117,17 +117,17 @@ allocproc(void)
   return 0;
 
 found:
-  p->pid = allocpid();
+  p->pid = allocpid();  //就开始创建进程，分配对应的pid和进程资源
   p->state = USED;
 
-  // Allocate a trapframe page.
+  // Allocate a trapframe page. 分配陷阱帧
   if((p->trapframe = (struct trapframe *)kalloc()) == 0){
     freeproc(p);
     release(&p->lock);
     return 0;
   }
 
-  // An empty user page table.
+  // An empty user page table.  分配页表
   p->pagetable = proc_pagetable(p);
   if(p->pagetable == 0){
     freeproc(p);
@@ -135,7 +135,7 @@ found:
     return 0;
   }
 
-  // Set up new context to start executing at forkret,
+  // Set up new context to start executing at forkret,  设置进程的上下文
   // which returns to user space.
   memset(&p->context, 0, sizeof(p->context));
   p->context.ra = (uint64)forkret;
@@ -271,7 +271,7 @@ growproc(int n)
 // Create a new process, copying the parent.
 // Sets up child kernel stack to return as if from fork() system call.
 int
-fork(void)
+fork(void)  //创建子进程
 {
   int i, pid;
   struct proc *np;
@@ -658,3 +658,21 @@ procdump(void)
     printf("\n");
   }
 }
+
+uint64 freeproc_amount(void){ //参考allocproc函数
+
+  struct proc *p;
+  uint64 count = 0;
+
+  for(p = proc; p < &proc[NPROC]; p++) {
+    acquire(&p->lock);
+    if(p->state != UNUSED) {  //找的就是不为UNUSED的进程数
+      count++;
+    }
+    release(&p->lock);
+  }
+
+  return count;
+}
+
+

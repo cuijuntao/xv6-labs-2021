@@ -1,11 +1,12 @@
 #include "types.h"
 #include "riscv.h"
-#include "defs.h"
+#include "defs.h" //在这里引用了我们写的获取空闲内存和空闲进程数的函数
 #include "date.h"
 #include "param.h"
 #include "memlayout.h"
 #include "spinlock.h"
 #include "proc.h"
+#include "sysinfo.h"  //引入sysinfo结构体
 
 uint64
 sys_exit(void)
@@ -100,14 +101,34 @@ sys_uptime(void)
 uint64
 sys_trace(void)
 {
-  int mask;
+  int mask; //掩码
 
-  if(argint(0, &mask) < 0)
+  if(argint(0, &mask) < 0)  //从参数0获取值
     return -1;
 
   // 把获得掩码存进进程的这个结构体里面，方面在syscall.c里面调用
   struct proc *p = myproc();  //获取现在的进程
   p->trace_mask = mask;
+
+  return 0;
+}
+
+
+uint64
+sys_sysinfo(void) //收集有关正在运行的系统的信息
+{
+  struct sysinfo info;  //我们把空闲内存和空闲进程数添加到sysinfo结构体中
+  info.freemem = freemem_amount();
+  info.nproc = freeproc_amount();
+
+  uint64 addr;  //地址指针
+  if(argaddr(0, &addr) < 0) //接收用户空间传过来的虚拟地址
+    return -1;
+
+  struct proc *p = myproc();
+  //p就是目标进程，在这里我们用目标进程的页表p->pagetable来接收用户空间传过来的虚拟地址addr，在这里我们把后续的数据开始写入
+  if(copyout(p->pagetable, addr, (char *)&info, sizeof(info)) < 0)    //我们把info结构体里面的数据拷贝过去到页表中
+    return -1;
 
   return 0;
 }
