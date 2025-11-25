@@ -81,6 +81,37 @@ int
 sys_pgaccess(void)
 {
   // lab pgtbl: your code here.
+  uint64 vaddr;
+  int len;
+  uint64 uaddr; //传进来的用户地址
+  if(argaddr(0, &vaddr) < 0)  //接收传进来的第一个参数，是一个地址，下面同理
+    return -1;
+  if(argint(1, &len) < 0) //接收要检查的页面数
+    return -1;
+  if(argaddr(2, &uaddr) < 0)
+    return -1;
+  if(len > 32 || len < 0){  //如果传进来的页面数超过了范围
+    return -1;
+  }
+  struct proc *p = myproc();  //获取当前进程
+  int bitmask = 0;  //临时缓冲区，存放输出位掩码
+
+  for(int i=0; i<len; i++){
+    uint64 va = vaddr + i * PGSIZE; //计算当前页的起始虚拟地址
+    pte_t *pte = walk(p->pagetable, va, 0); //通过walk函数查找页表项
+    if(pte == 0)  //查看pte是否存在
+      return 0;
+    if((*pte & PTE_V) && (*pte & PTE_A)){ //查看pte是否有效和被访问过
+      bitmask = bitmask | (1<<i); //如果被访问过，将bitmask的第i位置1
+
+      *pte = *pte & ~PTE_A; //然后清零  此时的PTE_A一定是1，取反为0，也就是把*pte的对应PTE_A置0
+    }
+  }
+
+  //调用copyout，将数据从内核态传回用户态
+  if(copyout(p->pagetable, uaddr, (char *)&bitmask, sizeof(bitmask)) < 0)
+    return -1;
+
   return 0;
 }
 #endif

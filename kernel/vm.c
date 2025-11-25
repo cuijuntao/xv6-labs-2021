@@ -101,14 +101,14 @@ walk(pagetable_t pagetable, uint64 va, int alloc)
   if(va >= MAXVA)
     panic("walk");
 
-  for(int level = 2; level > 0; level--) {
-    pte_t *pte = &pagetable[PX(level, va)];
-    if(*pte & PTE_V) {
+  for(int level = 2; level > 0; level--) {  //开始遍历多级页表，3级页表是210，2是最高级页表
+    pte_t *pte = &pagetable[PX(level, va)]; //取出当前页表的pte索引头
+    if(*pte & PTE_V) {  //如果当前条目存在，则开始找它的下级页表
       pagetable = (pagetable_t)PTE2PA(*pte);
     } else {
-      if(!alloc || (pagetable = (pde_t*)kalloc()) == 0)
+      if(!alloc || (pagetable = (pde_t*)kalloc()) == 0) //如果alloc!=0，则继续往下运行，创建新的页表页
         return 0;
-      memset(pagetable, 0, PGSIZE);
+      memset(pagetable, 0, PGSIZE); //分配新的
       *pte = PA2PTE(pagetable) | PTE_V;
     }
   }

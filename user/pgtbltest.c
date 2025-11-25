@@ -22,6 +22,7 @@ void
 err(char *why)
 {
   printf("pgtbltest: %s failed: %s, pid=%d\n", testname, why, getpid());
+  
   exit(1);
 }
 
@@ -61,10 +62,16 @@ pgaccess_test()
   buf[PGSIZE * 1] += 1;
   buf[PGSIZE * 2] += 1;
   buf[PGSIZE * 30] += 1;
+
+  // printf("abits: %x\n", abits); //打印返回的输出掩码结果
+
   if (pgaccess(buf, 32, &abits) < 0)
     err("pgaccess failed");
   if (abits != ((1 << 1) | (1 << 2) | (1 << 30)))
     err("incorrect access bits set");
+
+  // printf("abits: %x\n", abits); //打印返回的输出掩码结果
+
   free(buf);
   printf("pgaccess_test: OK\n");
 }
