@@ -485,7 +485,7 @@ static char* depth_buf[] = {  //定义层级数组
 void
 _vmprint(pagetable_t pagetable, int depth)
 {
-  // if(depth > 2) return;
+  if(depth > 2) return;
   char* buf = depth_buf[depth];
 
   // there are 2^9 = 512 PTEs in a page table.

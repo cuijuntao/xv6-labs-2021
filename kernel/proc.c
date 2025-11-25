@@ -213,13 +213,13 @@ proc_pagetable(struct proc *p)
   if(mappages(pagetable, USYSCALL, PGSIZE,
               (uint64)(p->usyscall), PTE_R | PTE_U) < 0){ //PTE_U只有用户可以访问
 
-    uvmunmap(pagetable, USYSCALL, 1, 0);  //如果映射失败，解除映射
+    // uvmunmap(pagetable, USYSCALL, 1, 0);  //如果映射失败，就说明没有映射成功，不需要解除映射
     uvmunmap(pagetable, TRAMPOLINE, 1, 0);
+    uvmunmap(pagetable, TRAPFRAME, 1, 0);   // 补上这句
+
     uvmfree(pagetable, 0);
     return 0;
   }
-
-
 
   return pagetable;
 }
@@ -229,9 +229,9 @@ proc_pagetable(struct proc *p)
 void
 proc_freepagetable(pagetable_t pagetable, uint64 sz)
 {
-  uvmunmap(pagetable, USYSCALL, 1, 0);  //解除映射关系
   uvmunmap(pagetable, TRAMPOLINE, 1, 0);
   uvmunmap(pagetable, TRAPFRAME, 1, 0);
+  uvmunmap(pagetable, USYSCALL, 1, 0);  //解除映射关系
   uvmfree(pagetable, sz);
 }
 

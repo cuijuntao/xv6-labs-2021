@@ -98,10 +98,14 @@ sys_pgaccess(void)
 
   for(int i=0; i<len; i++){
     uint64 va = vaddr + i * PGSIZE; //计算当前页的起始虚拟地址
-    pte_t *pte = walk(p->pagetable, va, 0); //通过walk函数查找页表项
-    if(pte == 0)  //查看pte是否存在
+
+    // 【新增】必须防止 va 越界，否则 walk 会 panic
+    if(va >= MAXVA)
       return 0;
-    if((*pte & PTE_V) && (*pte & PTE_A)){ //查看pte是否有效和被访问过
+
+    pte_t *pte = walk(p->pagetable, va, 0); //通过walk函数查找页表项
+
+    if(pte!=0 && (*pte & PTE_V) && (*pte & PTE_A)){ //查看pte是否有效和被访问过
       bitmask = bitmask | (1<<i); //如果被访问过，将bitmask的第i位置1
 
       *pte = *pte & ~PTE_A; //然后清零  此时的PTE_A一定是1，取反为0，也就是把*pte的对应PTE_A置0

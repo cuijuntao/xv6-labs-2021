@@ -1,0 +1,24 @@
+1. Which other xv6 system call(s) could be made faster using this shared page? Explain how.
+    uptime()和getppid()
+
+2. 根据文本中的图3-4解释vmprint的输出。page 0包含什么？page 2中是什么？在用户模式下运行时，进程是否可以读取/写入page 1映射的内存？
+page table 0x0000000087f6e000
+..0: pte 0x0000000021fda801 pa 0x0000000087f6a000
+.. ..0: pte 0x0000000021fda401 pa 0x0000000087f69000
+.. .. ..0: pte 0x0000000021fdac1f pa 0x0000000087f6b000
+.. .. ..1: pte 0x0000000021fda00f pa 0x0000000087f68000
+.. .. ..2: pte 0x0000000021fd9c1f pa 0x0000000087f67000
+..255: pte 0x0000000021fdb401 pa 0x0000000087f6d000
+.. ..511: pte 0x0000000021fdb001 pa 0x0000000087f6c000
+.. .. ..509: pte 0x0000000021fdd813 pa 0x0000000087f76000
+.. .. ..510: pte 0x0000000021fddc07 pa 0x0000000087f77000
+.. .. ..511: pte 0x0000000020001c0b pa 0x0000000080007000
+    Page 0 包含进程的指令（代码）和数据  0x0000000021fdac1f 1f结尾十六进制 1f = 二进制 0001 1111，分别是UXWRV U为1，可以访问
+    Page 2 包含进程的栈 0x0000000021fd9c1f
+    不可以，Page 1 是保护页，不可被用户读取，如果用户栈溢出并且进程试图使用栈下方的地址，那么由于映射无效（PTE_V为0）硬件将生成一个页面故障异常。
+    0x0000000021fda00f U为0，不可访问
+
+What does the third to last page contain?
+.. .. ..509: pte 0x0000000021fdd813 pa 0x0000000087f76000 倒数第3页为实现的系统调用加速功能，如果没有实现，则没有这页
+
+
