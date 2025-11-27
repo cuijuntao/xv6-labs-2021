@@ -122,6 +122,8 @@ panic(char *s)
   printf(s);
   printf("\n");
   panicked = 1; // freeze uart output from other CPUs
+
+  backtrace();  //调用backtrace在内核崩溃时看到内核的回溯信息
   for(;;)
     ;
 }
@@ -131,4 +133,28 @@ printfinit(void)
 {
   initlock(&pr.lock, "pr");
   pr.locking = 1;
+}
+
+//定义backtrace
+void backtrace(void){
+  printf("backtrace:\n");
+  uint64 fp = r_fp(); //获取当前的帧指针,放在s0寄存器中
+  uint64 *frame = (uint64 *) fp;  //将整数类型的地址 fp 强制转换为64位整型指针
+
+  // printf("%p\n", *frame);
+  // printf("%p\n", frame[-1]);  //存放当前函数执行完之后的返回地址
+  // printf("%p\n", frame[-2]);  //存放上一个函数的帧指针，用于向上回溯
+
+  uint64 top = PGROUNDUP(fp);  //栈页的页顶地址
+  uint64 bottom = PGROUNDDOWN(fp);  //页底地址
+
+  // printf("up:%p\n", up);
+  // printf("down:%p\n", down);
+
+  while (frame > (uint64 *)bottom && frame < (uint64 *)top)  //不能等于,等于就是下个页面了，会越界
+  {
+    printf("%p\n", frame[-1]);  //打印返回地址
+    frame = (uint64 *) frame[-2]; //更新 frame 指针，指向上一级函数的栈帧
+  }
+  
 }
