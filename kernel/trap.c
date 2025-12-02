@@ -77,8 +77,18 @@ usertrap(void)
     exit(-1);
 
   // give up the CPU if this is a timer interrupt.
-  if(which_dev == 2)
+  if(which_dev == 2){
+    if(p->ticks != 0){
+      if(p->is_alarming == 0 && p->ticks_count >= p->ticks){  //如果可以报警并且目前计数达到
+        memmove(p->alarm_trapframe, p->trapframe, sizeof(struct trapframe));  //记录之前的寄存器内容
+        p->ticks_count = 0;
+        p->is_alarming = 1;
+        p->trapframe->epc = p->handler; //执行中断处理函数
+      }  
+      p->ticks_count++; //计数
+    }
     yield();
+  }
 
   usertrapret();
 }
